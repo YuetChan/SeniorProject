@@ -31,59 +31,6 @@ public class AWSImageComparer implements IImageComparer{
 		rekognitionClient = AmazonRekognitionClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
 	
 	}
-	
-	//this will compare similarity of two person
-	@Override
-	public boolean compare(String targetImageReference, String originalImageReference) 
-			throws IOException {
-		
-		boolean matched = false;
-		
-	    ByteBuffer originalImageBytes=null;
-	    ByteBuffer targetImageBytes=null;
-	    
-	    //absolute path to target image, yours is different from mine, you can save ur image on deskyop as long as you use the absolute path, it will work
-		File targetImageFile = new File("C:\\Users\\yuet\\git\\seniorProjectRepo\\seniorProject\\src\\main\\resources\\static\\oimg.jpg");
-		try (InputStream inputStream = new FileInputStream(targetImageFile)) {
-			
-			targetImageBytes = ByteBuffer.wrap(IOUtils.toByteArray(inputStream));
-	    
-		}catch (Exception e) {
-	    	
-	    	System.out.println("Failed to load source image " + targetImageReference);
-	        System.exit(1);
-	    
-	    }
-		
-		//absolute path to original image, yours is different from mine, you can save ur image on deskyop as long as you use the absolute path, it will work
-		File originalImageFile = new File("C:\\Users\\yuet\\git\\seniorProjectRepo\\seniorProject\\src\\main\\resources\\static\\timg.jpg");
-		try (InputStream inputStream = new FileInputStream(originalImageFile)) {
-			
-			originalImageBytes = ByteBuffer.wrap(IOUtils.toByteArray(inputStream));
-			
-	    }catch (Exception e) {
-	    	
-	    	System.out.println("Failed to load source image " + originalImageReference);
-	        System.exit(1);
-	        
-	    }
-		
-	    Image source = new Image().withBytes(originalImageBytes);
-	    Image target = new Image().withBytes(targetImageBytes);
-
-	    CompareFacesRequest request 
-	    = new CompareFacesRequest()
-	    .withSourceImage(source)
-	    .withTargetImage(target)
-	    .withSimilarityThreshold(similarityThreshold);
-
-	    CompareFacesResult compareFacesResult = rekognitionClient.compareFaces(request);
-	    List <CompareFacesMatch> faceDetails = compareFacesResult.getFaceMatches();
-	    
-	    matched = (faceDetails.isEmpty() != true);
-	    return matched;
-	    
-	}
 
 	//this will compare similarity of two person
 	@Override
@@ -91,8 +38,8 @@ public class AWSImageComparer implements IImageComparer{
 		
 		boolean matched = false;
 		
-	    ByteBuffer originalImageBytes=null;
-	    ByteBuffer targetImageBytes=null;
+	    ByteBuffer originalImageBytes = null;
+	    ByteBuffer targetImageBytes = null;
 	    
 		try (InputStream inputStream = new FileInputStream(targetImageFile)) {
 			
@@ -118,6 +65,44 @@ public class AWSImageComparer implements IImageComparer{
 		
 	    Image source = new Image().withBytes(originalImageBytes);
 	    Image target = new Image().withBytes(targetImageBytes);
+
+	    CompareFacesRequest request 
+	    = new CompareFacesRequest()
+	    .withSourceImage(source)
+	    .withTargetImage(target)
+	    .withSimilarityThreshold(similarityThreshold);
+
+	    CompareFacesResult compareFacesResult = rekognitionClient.compareFaces(request);
+	    List <CompareFacesMatch> faceDetails = compareFacesResult.getFaceMatches();
+	    
+	    matched = (faceDetails.isEmpty() != true);
+	    return matched;
+	    
+	}
+	
+	@Override
+	public boolean compare(byte[] targetImageBytes, File originalImageFile) throws IOException {
+		
+		boolean matched = false;
+		
+	    ByteBuffer originalImageByteBuffer = null;
+	    ByteBuffer targetImageByteBuffer = null;
+		
+		targetImageByteBuffer = ByteBuffer.wrap(targetImageBytes);
+
+		try (InputStream inputStream = new FileInputStream(originalImageFile)) {
+			
+			originalImageByteBuffer = ByteBuffer.wrap(IOUtils.toByteArray(inputStream));
+	    
+		}catch (Exception e) {
+	    	
+	    	System.out.println("Failed to load source image " + originalImageFile.getAbsolutePath());
+	        System.exit(1);
+	        
+	    }
+		
+	    Image source = new Image().withBytes(originalImageByteBuffer);
+	    Image target = new Image().withBytes(targetImageByteBuffer);
 
 	    CompareFacesRequest request 
 	    = new CompareFacesRequest()
