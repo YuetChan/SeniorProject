@@ -5,7 +5,7 @@ public class FirstLoginOutput {
 	private boolean success;
 	private String tokenString;
 	
-	public FirstLoginOutput(boolean successed, String tokenString) {
+	public FirstLoginOutput(boolean success, String tokenString) {
 		
 		super();
 		
