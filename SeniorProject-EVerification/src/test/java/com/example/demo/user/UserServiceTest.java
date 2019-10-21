@@ -19,6 +19,7 @@ import com.example.demo.loginToken.LoginTokenSchema;
 import com.example.demo.passwordResetToken.IPasswordResetTokenSchema;
 import com.example.demo.passwordResetToken.PasswordResetToken;
 import com.example.demo.passwordResetToken.PasswordResetTokenSchema;
+import com.example.demo.registerDetail.RegisterDetail;
 import com.example.demo.user.UserSchema;
 import com.example.demo.user.UserService;
 
@@ -48,20 +49,71 @@ public class UserServiceTest {
 	
 	//--------------------register && activate unit test------------------------------------
 	
+	@Test
+	public void RegisterWithExistingUserThatIsActivatedShouldReturnFalseTrue() {
+		RegisterDetail detail = new RegisterDetail();
+		
+		UserService userService = new UserService();
+		UserSchema userSchema = new UserSchema();
+		User user = new User();
+		
+		user.setUseremail("andrew@gmail.com");
+		user.setPassword("andrew");
+		user.setUserId(userSchema.getNextId());
+		user.setActivated(true);
+		userSchema.save(user);
+		
+		detail = userService.register("andrew@gmail.com", userSchema);
+		
+		assertTrue(detail.isRegisterSuccess() == false && detail.isRegisteredBefore() == true);
+	}
 	
+	@Test
+	public void RegisterWithExistingUserThatIsNotActivateShouldReturnTrueTrue(){
+		RegisterDetail detail = new RegisterDetail();
+		
+		UserService userService = new UserService();
+		UserSchema userSchema = new UserSchema();
+		User user = new User();
+		
+		user.setUseremail("andrew@gmail.com");
+		user.setPassword("andrew");
+		user.setUserId(userSchema.getNextId());
+		user.setActivated(false);
+		userSchema.save(user);
+		
+		detail = userService.register("andrew@gmail.com", userSchema);
+		
+		assertTrue(detail.isRegisterSuccess() == true && detail.isRegisteredBefore() == true);	
+	}
+	
+	@Test
+	public void RegisterWithNewUserShouldReturnTrueFalse(){
+		
+		RegisterDetail detail = new RegisterDetail();
+		
+		UserService userService = new UserService();
+		UserSchema userSchema = new UserSchema();
+		
+		detail = userService.register("andrew@gmail.com", userSchema);
+		
+		assertTrue(detail.isRegisterSuccess() == true && detail.isRegisteredBefore() == false);
+		
+		
+	}
 	
 	
 	
 	//---------------------AWSImageComparer unit test----------------------------------
-	
+	/*
 	@Test
 	public void AWSImageComparerCompareTwoImageWithSamePersonShouldReturnTrueTest() throws IOException {
 		
 		boolean matched = false;
 		
 		// you can put ur image file anywhere you want but you have to use their absolute paths
-		File targetImageFile = new File("C:\\Users\\yuet\\git\\seniorProjectRepo\\seniorProject\\src\\main\\resources\\static\\oimg.jpg");
-		File originalImageFile = new File("C:\\Users\\yuet\\git\\seniorProjectRepo\\seniorProject\\src\\main\\resources\\static\\timg.jpg");
+		File targetImageFile = new File("C:\\Users\\Andrew\\git\\SeniorProject\\SeniorProject-EVerification\\src\\main\\resources\\static\\oimg.jpg");
+		File originalImageFile = new File("C:\\Users\\Andrew\\git\\SeniorProject\\SeniorProject-Everification\\src\\main\\resources\\static\\timg.jpg");
 		
 		IImageComparer imageComparer = new AWSImageComparer();
 		//compare take in two File object and compare them as images
@@ -70,7 +122,7 @@ public class UserServiceTest {
 		assertTrue(matched == true);
 		
 	}
-	
+	*/
 	//--------------------reset password && change password unit testing-----------------------
 	@Test
 	public void resetPasswordWithExistedUserAndPasswordResetTokenShouldReturnTrue() {
