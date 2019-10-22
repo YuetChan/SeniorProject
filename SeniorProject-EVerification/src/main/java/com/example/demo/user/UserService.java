@@ -13,9 +13,22 @@ public class UserService {
 	public UserService() {
 	}
 	
-	public LoginToken firstLogin(String useremail, String password, UserSchema userSchema) {
+	public boolean firstLogin(String useremail, String password, UserSchema userSchema) {
+		boolean firstLogin = false;
+		User user = userSchema.findByUseremail(useremail);
 		
-		return null;
+		if (user != null && password.equals(user.getPassword())) {
+			if(user.isActivated() == false)
+				firstLogin = false;
+			else
+				firstLogin = true;
+				}
+	
+		else {
+			firstLogin = false;
+		}
+		
+		return firstLogin;
 		
 	}
 	
