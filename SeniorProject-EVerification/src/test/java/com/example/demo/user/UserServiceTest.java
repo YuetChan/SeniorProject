@@ -41,6 +41,20 @@ public class UserServiceTest {
 	}
 	
 	//--------------------first && second login unit test----------------------------------
+	@Test
+	public void FirstLoginWithRegisteredUserShouldReturnTrue() {
+		
+		boolean firstLogin = false;
+		
+		UserService userService = new UserService();                                                        
+		UserSchema userSchema = new UserSchema();
+		
+		User user = new User();
+		user.setUseremail("abc123@gmail.com");
+		user.setPassword("abc123");
+		user.setUserId(userSchema.getNextId());
+		userSchema.save(user);
+	}
 	
 
 	
