@@ -43,6 +43,68 @@ public class UserServiceTest {
 	
 	//--------------------first && second login unit test----------------------------------
 	
+	//Still need isActivated function
+	@Test
+	public void FirstLoginWithRegisteredAndActivatedUserShouldReturnTrue() {
+		
+		boolean firstLogin = false;
+		
+		UserService userService = new UserService();                                                        
+		UserSchema userSchema = new UserSchema();
+		
+		User user = new User();
+		user.setUseremail("abc123@gmail.com");
+		user.setPassword("abc123");
+		user.setUserId(userSchema.getNextId());
+		
+		userSchema.save(user);
+		
+		firstLogin = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
+		
+		assertTrue(firstLogin == false);
+		
+	}
+	//Still need isActivated function
+	@Test
+	public void FirstLoginWithRegisteredAndUnactivatedUserShouldReturnFalse() {
+		
+		boolean firstLogin = false;
+		
+		UserService userService = new UserService();                                                        
+		UserSchema userSchema = new UserSchema();
+		
+		User user = new User();
+		user.setUseremail("abc123@gmail.com");
+		user.setPassword("abc123");
+		user.setUserId(userSchema.getNextId());
+		
+		userSchema.save(user);
+		
+		firstLogin = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
+		
+		assertTrue(firstLogin == false);
+		
+	}
+	@Test
+	public void FirstLoginWithUnregisteredUserShouldReturnFalse(){
+		
+		boolean firstLogin = false;
+		
+		UserService userService = new UserService();                                                        
+		UserSchema userSchema = new UserSchema();
+		
+		User user = new User();
+		user.setUseremail("abc123@gmail.com");
+		user.setPassword("abc123");
+		user.setUserId(userSchema.getNextId());
+		
+		userSchema.save(user);
+		
+		firstLogin = userService.firstLogin("cde456@gmail.com", "abc123", userSchema);
+		
+		assertTrue(firstLogin == false);
+	}
+	
 
 	
 	
