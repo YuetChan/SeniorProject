@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.example.demo.passwordResetToken.IPasswordResetTokenSchema;
 import com.example.demo.passwordResetToken.PasswordResetToken;
 import com.example.demo.passwordResetToken.PasswordResetTokenSchema;
+import com.example.demo.registerDetail.RegisterDetail;
 import com.example.demo.loginToken.LoginToken;
 
 public class UserService {
@@ -13,9 +14,22 @@ public class UserService {
 	public UserService() {
 	}
 	
-	public LoginToken firstLogin(String useremail, String password, UserSchema userSchema) {
+	public boolean firstLogin(String useremail, String password, UserSchema userSchema) {
+		boolean firstLogin = false;
+		User user = userSchema.findByUseremail(useremail);
 		
-		return null;
+		if (user != null && password.equals(user.getPassword())) {
+			if(user.isActivated() == false)
+				firstLogin = false;
+			else
+				firstLogin = true;
+				}
+	
+		else {
+			firstLogin = false;
+		}
+		
+		return firstLogin;
 		
 	}
 	
@@ -25,9 +39,32 @@ public class UserService {
 		
 	}
 	
-	public boolean register(String useremail, String password) {
+	public RegisterDetail register(
+			String useremail, 
+			UserSchema userSchema) {
 		
-		return true;
+		User user = userSchema.findByUseremail(useremail);
+		RegisterDetail detail = new RegisterDetail();
+		
+		//CHECK ACTIVATE TOKEN ONCE THAT CLASS EXISTS
+		
+		if (user == null){
+			detail.setRegisterSuccess(true); 
+			detail.setRegisteredBefore(false);
+		}
+		
+		else{
+			if(!user.isActivated()){
+				detail.setRegisteredBefore(true);
+				detail.setRegisterSuccess(true);
+			}
+			else{
+				detail.setRegisteredBefore(true);
+				detail.setRegisterSuccess(false);
+			}
+		}
+
+		return detail;
 		
 	}
 	
