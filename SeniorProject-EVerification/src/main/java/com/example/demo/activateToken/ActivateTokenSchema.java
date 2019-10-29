@@ -25,16 +25,17 @@ public class ActivateTokenSchema implements IActivateTokenSchema {
 		
 		ActivateToken savedToken = null;
 		
-		Query query = new Query();
-		query.addCriteria(Criteria
-				.where("userId").is(tokenToBeSaved.getUserId()));
-    	
+		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
 		Update update = new Update();
+		Query query = new Query();
+		
+		query.addCriteria(Criteria
+				.where("UserId").is(tokenToBeSaved.getUserId()));
+    	
 		update.setOnInsert("UserId", tokenToBeSaved.getUserId());
 		update.setOnInsert("TokenString", tokenToBeSaved.getTokenString());
 		update.setOnInsert("ExpirationDate", tokenToBeSaved.getExpirationDate());
 		
-		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
 		findAndModifyOptions.upsert(true);
 		findAndModifyOptions.returnNew(true);
 		

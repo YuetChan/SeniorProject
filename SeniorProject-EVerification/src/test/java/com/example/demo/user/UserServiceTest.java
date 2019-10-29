@@ -2,18 +2,21 @@ package com.example.demo.user;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.example.demo.activateToken.ActivateToken;
+import com.example.demo.activateToken.ActivateTokenSchema;
+import com.example.demo.activateToken.IActivateTokenSchema;
 import com.example.demo.config.CustomMongoDbConfig;
-import com.example.demo.imageComparer.AWSImageComparer;
-import com.example.demo.imageComparer.IImageComparer;
+import com.example.demo.imageService.AWSImageComparer;
+import com.example.demo.imageService.IImageComparer;
 import com.example.demo.loginToken.ILoginTokenSchema;
 import com.example.demo.loginToken.LoginTokenSchema;
 import com.example.demo.passwordResetToken.IPasswordResetTokenSchema;
@@ -26,16 +29,28 @@ import com.example.demo.user.UserService;
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
 	
-
+	private IUserSchema userSchema = new UserSchema(CustomMongoDbConfig.mongoTemplate());
+	private IActivateTokenSchema activateTokenSchema = new ActivateTokenSchema(CustomMongoDbConfig.mongoTemplate());
 	private ILoginTokenSchema loginTokenSchema = new LoginTokenSchema(CustomMongoDbConfig.mongoTemplate());
 	private IPasswordResetTokenSchema passwordResetTokenSchema = new PasswordResetTokenSchema(CustomMongoDbConfig.mongoTemplate());
-
 	
 	
 	//-------------------Before each test clear all schema-----------------------------------
 	@Before
 	public void setup() {
 		
+		userSchema.deleteAll();
+		activateTokenSchema.deleteAll();
+		loginTokenSchema.deleteAll();
+		passwordResetTokenSchema.deleteAll();
+		
+	}
+	
+	@After
+	public void cleanup() {
+		
+		userSchema.deleteAll();
+		activateTokenSchema.deleteAll();
 		loginTokenSchema.deleteAll();
 		passwordResetTokenSchema.deleteAll();
 		
@@ -47,120 +62,161 @@ public class UserServiceTest {
 	@Test
 	public void FirstLoginWithRegisteredAndActivatedUserShouldReturnTrue() {
 		
-		boolean firstLogin = false;
+		boolean firstLogined = false;
 		
 		UserService userService = new UserService();                                                        
-		UserSchema userSchema = new UserSchema();
 		
 		User user = new User();
+		user.setUserId(userSchema.getNextId());
 		user.setUseremail("abc123@gmail.com");
 		user.setPassword("abc123");
-		user.setUserId(userSchema.getNextId());
+		
+		user.setActivated(true);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
 		
 		userSchema.save(user);
 		
-		firstLogin = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
+		firstLogined = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
 		
-		assertTrue(firstLogin == false);
+		assertTrue(firstLogined == true);
 		
 	}
+	
 	//Still need isActivated function
 	@Test
 	public void FirstLoginWithRegisteredAndUnactivatedUserShouldReturnFalse() {
 		
-		boolean firstLogin = false;
+		boolean firstLogined = false;
 		
 		UserService userService = new UserService();                                                        
-		UserSchema userSchema = new UserSchema();
 		
 		User user = new User();
 		user.setUseremail("abc123@gmail.com");
 		user.setPassword("abc123");
 		user.setUserId(userSchema.getNextId());
 		
+		user.setActivated(false);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
+		
 		userSchema.save(user);
 		
-		firstLogin = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
+		firstLogined = userService.firstLogin("abc123@gmail.com", "abc123", userSchema);
 		
-		assertTrue(firstLogin == false);
+		assertTrue(firstLogined == false);
 		
 	}
+	
 	@Test
-	public void FirstLoginWithUnregisteredUserShouldReturnFalse(){
+	public void FrstLoginWithUnregisteredUserShouldReturnFalse(){
 		
-		boolean firstLogin = false;
+		boolean firstLogined = false;
 		
 		UserService userService = new UserService();                                                        
-		UserSchema userSchema = new UserSchema();
 		
-		User user = new User();
-		user.setUseremail("abc123@gmail.com");
-		user.setPassword("abc123");
-		user.setUserId(userSchema.getNextId());
+		firstLogined = userService.firstLogin("cde456@gmail.com", "abc123", userSchema);
 		
-		userSchema.save(user);
+		assertTrue(firstLogined == false);
 		
-		firstLogin = userService.firstLogin("cde456@gmail.com", "abc123", userSchema);
-		
-		assertTrue(firstLogin == false);
 	}
-	
-
-	
-	
 	
 	//--------------------register && activate unit test------------------------------------
 	
 	@Test
-	public void RegisterWithExistingUserThatIsActivatedShouldReturnFalseTrue() {
-		RegisterDetail detail = new RegisterDetail();
+	public void RegisterWithExistingUserThatIsActivatedShouldReturnNotSuccess() {
+		
+		RegisterDetail registerDetail = new RegisterDetail();
 		
 		UserService userService = new UserService();
-		UserSchema userSchema = new UserSchema();
-		User user = new User();
 		
+		User user = new User();
+		user.setUserId(userSchema.getNextId());
 		user.setUseremail("andrew@gmail.com");
 		user.setPassword("andrew");
-		user.setUserId(userSchema.getNextId());
+		
 		user.setActivated(true);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
+		
 		userSchema.save(user);
 		
-		detail = userService.register("andrew@gmail.com", userSchema);
+		registerDetail = userService.register("andrew@gmail.com", userSchema, activateTokenSchema);
 		
-		assertTrue(detail.isRegisterSuccess() == false && detail.isRegisteredBefore() == true);
+		assertTrue(!registerDetail.isRegisterSuccess());
+		
 	}
 	
 	@Test
-	public void RegisterWithExistingUserThatIsNotActivateShouldReturnTrueTrue(){
-		RegisterDetail detail = new RegisterDetail();
+	public void RegisterWithExistingUserThatIsNotActivateShouldReturnSuccessWhenActivateTokenIsExpired(){
+		
+		RegisterDetail registerDetail = new RegisterDetail();
 		
 		UserService userService = new UserService();
-		UserSchema userSchema = new UserSchema();
+
 		User user = new User();
-		
+		user.setUserId(userSchema.getNextId());
 		user.setUseremail("andrew@gmail.com");
 		user.setPassword("andrew");
-		user.setUserId(userSchema.getNextId());
+		
 		user.setActivated(false);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
+		
 		userSchema.save(user);
 		
-		detail = userService.register("andrew@gmail.com", userSchema);
+		ActivateToken activateToken = new ActivateToken();
+		activateToken.setUserId(user.getUserId());
+		activateToken.setTokenString(UUID.randomUUID().toString());
+		activateToken.setExpirationDate(LocalDateTime.now().minusMinutes(30));
 		
-		assertTrue(detail.isRegisterSuccess() == true && detail.isRegisteredBefore() == true);	
+		activateTokenSchema.save(activateToken);
+		
+		registerDetail = userService.register("andrew@gmail.com", userSchema, activateTokenSchema);
+		
+		assertTrue(registerDetail.isRegisterSuccess());	
 	}
 	
 	@Test
-	public void RegisterWithNewUserShouldReturnTrueFalse(){
+	public void RegisterWithExistingUserThatIsNotActivateShouldReturnRegisteredBeforeWhenActivateTokenIsExpired(){
 		
-		RegisterDetail detail = new RegisterDetail();
+		RegisterDetail registerDetail = new RegisterDetail();
 		
 		UserService userService = new UserService();
-		UserSchema userSchema = new UserSchema();
+
+		User user = new User();
+		user.setUserId(userSchema.getNextId());
+		user.setUseremail("andrew@gmail.com");
+		user.setPassword("andrew");
 		
-		detail = userService.register("andrew@gmail.com", userSchema);
+		user.setActivated(false);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
 		
-		assertTrue(detail.isRegisterSuccess() == true && detail.isRegisteredBefore() == false);
+		userSchema.save(user);
 		
+		ActivateToken activateToken = new ActivateToken();
+		activateToken.setUserId(user.getUserId());
+		activateToken.setTokenString(UUID.randomUUID().toString());
+		activateToken.setExpirationDate(LocalDateTime.now().minusMinutes(30));
+		
+		activateTokenSchema.save(activateToken);
+		
+		registerDetail = userService.register("andrew@gmail.com", userSchema, activateTokenSchema);
+		
+		assertTrue(registerDetail.isRegisteredBefore());	
+	}
+	
+	@Test
+	public void RegisterWithNewUserShouldReturnSuccess(){
+		
+		RegisterDetail registerDetail = new RegisterDetail();
+		
+		UserService userService = new UserService();
+		
+		registerDetail = userService.register("andrew@gmail.com", userSchema, activateTokenSchema);
+		
+		assertTrue(registerDetail.isRegisterSuccess());
 		
 	}
 	
@@ -187,25 +243,27 @@ public class UserServiceTest {
 	*/
 	//--------------------reset password && change password unit testing-----------------------
 	@Test
-	public void resetPasswordWithExistedUserAndPasswordResetTokenShouldReturnTrue() {
+	public void resetPasswordWithExistingUserThatIsActivatedShouldReturnTrue() {
 		
 		boolean reset = false;
 		
 		UserService userService = new UserService();                                                        
-		
-		UserSchema userSchema = new UserSchema();
-		
+			
 		User user = new User();
+		user.setUserId(userSchema.getNextId());
 		user.setUseremail("Saito@gmail.com");
 		user.setPassword("Saito");
-		user.setUserId(userSchema.getNextId());
+		
+		user.setActivated(true);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
 		
 		userSchema.save(user);
 		
-		
-		
 		PasswordResetToken passwordResetToken = new PasswordResetToken();
 		passwordResetToken.setUserId(user.getUserId());
+		passwordResetToken.setExpirationDate(LocalDateTime.now().plusMinutes(30));
+		passwordResetToken.setTokenString(UUID.randomUUID().toString());
 		
 		passwordResetTokenSchema.save(passwordResetToken);
 		
@@ -216,107 +274,118 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void resetPasswordWithNotExistedUserShouldReturnFalse() {
+	public void resetPasswordWithExistingUserThatIsNotActivatedShouldReturnFalse() {
 		
 		boolean reset = false;
 		
 		UserService userService = new UserService();                                                        
-		
-		UserSchema userSchema = new UserSchema();
-		
-		reset = userService.resetPassword("Saito@gmail.com", userSchema, passwordResetTokenSchema);
-	
-		assertTrue(reset == false);
-		
-	}
-	
-	@Test
-	public void resetPasswordWithNotExistedPasswordResetTokenShouldReturnFalse() {
-		
-		boolean reset = false;
-		
-		UserService userService = new UserService();                                                        
-		
-		UserSchema userSchema = new UserSchema();
-		
-		User user = new User();
-		user.setUseremail("Saito@gmail.com");
-		user.setPassword("Saito");
-		user.setUserId(userSchema.getNextId());
-		
-		userSchema.save(user);
-		
-		reset = userService.resetPassword("Saito@gmail.com", userSchema, passwordResetTokenSchema);
-	
-		assertTrue(reset == false);
-		
-	}
-	
-	@Test
-	public void changePasswordWithNotMatchedPasswordResetTokenStringShouldReturnFalse() {
-		
-		boolean reset = false;
 			
-		UserService userService = new UserService();                                                        
-		
-		UserSchema userSchema = new UserSchema();
-		
 		User user = new User();
+		user.setUserId(userSchema.getNextId());
 		user.setUseremail("Saito@gmail.com");
 		user.setPassword("Saito");
-		user.setUserId(userSchema.getNextId());
+		
+		user.setActivated(false);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
 		
 		userSchema.save(user);
 		
 		PasswordResetToken passwordResetToken = new PasswordResetToken();
 		passwordResetToken.setUserId(user.getUserId());
-		passwordResetToken.setTokenString("123456789");
-		passwordResetToken.setExpirationDate(LocalDateTime.now().plusMinutes(999999));
+		passwordResetToken.setExpirationDate(LocalDateTime.now().plusMinutes(30));
+		passwordResetToken.setTokenString(UUID.randomUUID().toString());
 		
 		passwordResetTokenSchema.save(passwordResetToken);
 		
-		reset 
-		= userService.changePassword(
-				user.getUserId(), 
-				"abcdefghi", 
-				userSchema, 
-				passwordResetTokenSchema);
+		reset = userService.resetPassword("Saito@gmail.com", userSchema, passwordResetTokenSchema);
 	
 		assertTrue(reset == false);
+		
+	}
+	
+	@Test
+	public void resetPasswordWithNotExistingUserShouldReturnFalse() {
+		
+		boolean reset = false;
+		
+		UserService userService = new UserService();                                                        
+		
+		reset = userService.resetPassword("Saito@gmail.com", userSchema, passwordResetTokenSchema);
+	
+		assertTrue(reset == false);
+		
+	}
+	
+	@Test
+	public void changePasswordWithUnmatchedPasswordResetTokenStringShouldReturnFalse() {
+		
+		boolean changed = false;
+			
+		UserService userService = new UserService();                                                        
+		
+		User user = new User();
+		user.setUseremail("Saito@gmail.com");
+		user.setPassword("Saito");
+		user.setUserId(userSchema.getNextId());
+		
+		user.setActivated(true);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
+		
+		userSchema.save(user);
+		
+		String token = UUID.randomUUID().toString();
+		
+		PasswordResetToken passwordResetToken = new PasswordResetToken();
+		passwordResetToken.setUserId(user.getUserId());
+		passwordResetToken.setTokenString(token);
+		passwordResetToken.setExpirationDate(LocalDateTime.now().plusMinutes(30));
+		
+		passwordResetTokenSchema.save(passwordResetToken);
+		
+		changed 
+		= userService.changePassword(
+				user.getUserId(), token + "1234", 
+				passwordResetTokenSchema);
+	
+		assertTrue(changed == false);
 		
 	}
 	
 	@Test
 	public void changePasswordWithExpiredPasswordResetTokenShouldReturnFalse() {
 		
-		boolean reset = false;
+		boolean changed = false;
 			
 		UserService userService = new UserService();                                                        
-		
-		UserSchema userSchema = new UserSchema();
 		
 		User user = new User();
 		user.setUseremail("Saito@gmail.com");
 		user.setPassword("Saito");
 		user.setUserId(userSchema.getNextId());
 		
+		user.setActivated(true);
+		user.setCreatedAt(LocalDateTime.now());
+		user.setUpdatedAt(LocalDateTime.now());
+		
 		userSchema.save(user);
+		
+		String token = UUID.randomUUID().toString();
 		
 		PasswordResetToken passwordResetToken = new PasswordResetToken();
 		passwordResetToken.setUserId(user.getUserId());
-		passwordResetToken.setTokenString("123456789");
-		passwordResetToken.setExpirationDate(LocalDateTime.now().minusMinutes(10));
+		passwordResetToken.setTokenString(token);
+		passwordResetToken.setExpirationDate(LocalDateTime.now().minusMinutes(30));
 		
 		passwordResetTokenSchema.save(passwordResetToken);
 		
-		reset 
+		changed 
 		= userService.changePassword(
-				user.getUserId(), 
-				"123456789", 
-				userSchema, 
+				user.getUserId(), token, 
 				passwordResetTokenSchema);
 	
-		assertTrue(reset == false);
+		assertTrue(changed == false);
 		
 	}
 	

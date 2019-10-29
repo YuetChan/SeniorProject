@@ -2,28 +2,24 @@ package com.example.demo.output;
 
 public class ActivateOutput {
 	
-	private boolean success;
+	private String status ;
 
 	public ActivateOutput(boolean success) {
 		
 		super();
 		
-		this.success = success;
+	}
+
+	public String getStatus() {
+		
+		return status;
 		
 	}
 
-	public boolean isSuccess() {
+	public void setStatus(String status) {
 		
-		return success;
-		
-	}
-
-	public void setSuccess(boolean success) {
-		
-		this.success = success;
+		this.status = status;
 		
 	}
-	
-	
 
 }

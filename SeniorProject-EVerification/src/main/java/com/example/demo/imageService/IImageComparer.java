@@ -1,4 +1,4 @@
-package com.example.demo.imageComparer;
+package com.example.demo.imageService;
 
 import java.io.File;
 import java.io.IOException;

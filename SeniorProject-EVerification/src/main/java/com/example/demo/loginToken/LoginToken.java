@@ -8,11 +8,16 @@ public class LoginToken {
 	private String tokenString;
 	private LocalDateTime expirationDate;
 	
-	public LoginToken(int userId, String tokenString, LocalDateTime expirationDate) {
+	public LoginToken() {
+		
 		super();
-		this.userId = userId;
-		this.tokenString = tokenString;
-		this.expirationDate = expirationDate;
+		
+	}
+	
+	public boolean isExpired() {
+		
+		return LocalDateTime.now().isAfter(expirationDate);
+		
 	}
 	
 	public int getUserId() {

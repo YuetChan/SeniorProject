@@ -1,9 +1,11 @@
 package com.example.demo.request;
 
+import java.util.ArrayList;
+
 public class SecondLoginRequest {
 	
 	private String tokenString;
-	private String imgBase64;
+	private ArrayList<String> imageDataUrls;
 	
 	public String getTokenString() {
 		
@@ -16,16 +18,16 @@ public class SecondLoginRequest {
 		this.tokenString = tokenString;
 		
 	}
-	
-	public String getImgBase64() {
+
+	public ArrayList<String> getImageDataUrls() {
 		
-		return imgBase64;
+		return imageDataUrls;
 		
 	}
-	
-	public void setImgBase64(String imgBase64) {
+
+	public void setImageDataUrls(ArrayList<String> imageDataUrls) {
 		
-		this.imgBase64 = imgBase64;
+		this.imageDataUrls = imageDataUrls;
 		
 	}
 	

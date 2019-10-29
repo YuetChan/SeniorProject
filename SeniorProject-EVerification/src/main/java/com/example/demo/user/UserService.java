@@ -1,35 +1,35 @@
 package com.example.demo.user;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.example.demo.passwordResetToken.IPasswordResetTokenSchema;
 import com.example.demo.passwordResetToken.PasswordResetToken;
-import com.example.demo.passwordResetToken.PasswordResetTokenSchema;
 import com.example.demo.registerDetail.RegisterDetail;
-import com.example.demo.loginToken.LoginToken;
+
+import com.example.demo.activateToken.ActivateToken;
+import com.example.demo.activateToken.IActivateTokenSchema;
 
 public class UserService {
 	
 	public UserService() {
 	}
 	
-	public boolean firstLogin(String useremail, String password, UserSchema userSchema) {
-		boolean firstLogin = false;
+	public boolean firstLogin(
+			String useremail, String password, 
+			IUserSchema userSchema) {
+		
+		boolean firstLogined = false;
+		
 		User user = userSchema.findByUseremail(useremail);
-		
 		if (user != null && password.equals(user.getPassword())) {
-			if(user.isActivated() == false)
-				firstLogin = false;
-			else
-				firstLogin = true;
-				}
 	
-		else {
-			firstLogin = false;
-		}
+			if(user.isActivated() == true) 
+				firstLogined = true;
+			else
+				firstLogined = false;
+			
+		}else 
+			firstLogined = false;
 		
-		return firstLogin;
+		return firstLogined;
 		
 	}
 	
@@ -41,49 +41,48 @@ public class UserService {
 	
 	public RegisterDetail register(
 			String useremail, 
-			UserSchema userSchema) {
+			IUserSchema userSchema, IActivateTokenSchema activateTokenSchema) {
+		
+		RegisterDetail registerDetail = new RegisterDetail();
 		
 		User user = userSchema.findByUseremail(useremail);
-		RegisterDetail detail = new RegisterDetail();
-		
-		//CHECK ACTIVATE TOKEN ONCE THAT CLASS EXISTS
-		
 		if (user == null){
-			detail.setRegisterSuccess(true); 
-			detail.setRegisteredBefore(false);
-		}
-		
-		else{
-			if(!user.isActivated()){
-				detail.setRegisteredBefore(true);
-				detail.setRegisterSuccess(true);
+			
+			registerDetail.setRegisterSuccess(true); 
+			registerDetail.setRegisteredBefore(false);
+			
+		}else{
+			System.out.print("----------------------");
+			ActivateToken activateToken = activateTokenSchema.findByUserId(user.getUserId());
+			if(!user.isActivated() && activateToken.isExpired()){
+				System.out.print("----------------------");
+				registerDetail.setRegisteredBefore(true);
+				registerDetail.setRegisterSuccess(true);
+				
+			}else {
+				
+				registerDetail.setRegisteredBefore(true);
+				registerDetail.setRegisterSuccess(false);
+				
 			}
-			else{
-				detail.setRegisteredBefore(true);
-				detail.setRegisterSuccess(false);
-			}
+			
 		}
 
-		return detail;
+		return registerDetail;
 		
 	}
 	
 	public boolean resetPassword(
 			String useremail, 
-			UserSchema userSchema, 
+			IUserSchema userSchema, 
 			IPasswordResetTokenSchema passwordResetTokenSchema) {
 		
 		boolean reset = false;
 		
 		User user = userSchema.findByUseremail(useremail);
-		if(user != null) {
-			int userId = user.getUserId();
-			PasswordResetToken passwordResetToken = passwordResetTokenSchema.findByUserId(userId);
-			if(passwordResetToken != null)
-				reset = true;
-			else
-				reset = false;
-		}else 
+		if(user != null && user.isActivated()) 
+			reset = true;
+		else 
 			reset = false;
 		
 		return reset;
@@ -92,15 +91,16 @@ public class UserService {
 	
 	public boolean changePassword(
 			int userId, String tokenString, 
-			UserSchema userSchema, 
 			IPasswordResetTokenSchema passwordResetTokenSchema) {
 		
 		boolean changed = false;
 		
 		PasswordResetToken passwordResetToken = passwordResetTokenSchema.findByUserId(userId);
-		if(passwordResetToken.getTokenString().equals(tokenString) && !passwordResetToken.isExpired()) {
+		if(passwordResetToken != null 
+				&& passwordResetToken.getTokenString().equals(tokenString) 
+				&& !passwordResetToken.isExpired()) 
 			changed = true;
-		}else 
+		else 
 			changed = false;
 		
 		return changed;

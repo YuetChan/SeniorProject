@@ -2,27 +2,24 @@ package com.example.demo.output;
 
 public class FirstLoginOutput {
 	
-	private boolean success;
+	private String status;
 	private String tokenString;
 	
-	public FirstLoginOutput(boolean successed, String tokenString) {
+	public FirstLoginOutput() {
 		
 		super();
 		
-		this.success = success;
-		this.tokenString = tokenString;
+	}
+
+	public String getStatus() {
+		
+		return status;
 		
 	}
 
-	public boolean isSuccessed() {
+	public void setStatus(String status) {
 		
-		return success;
-		
-	}
-
-	public void setSuccessed(boolean success) {
-		
-		this.success = success;
+		this.status = status;
 		
 	}
 

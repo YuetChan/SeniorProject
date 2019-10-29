@@ -28,7 +28,7 @@ public class LoginTokenSchema implements ILoginTokenSchema {
 		
 		Query query = new Query();
 		query.addCriteria(Criteria
-				.where("userId").is(tokenToBeSaved.getUserId()));
+				.where("UserId").is(tokenToBeSaved.getUserId()));
     	
 		Update update = new Update();
 		update.setOnInsert("UserId", tokenToBeSaved.getUserId());
@@ -57,7 +57,7 @@ public class LoginTokenSchema implements ILoginTokenSchema {
 		
 		Query query = new Query();
 		query.addCriteria(Criteria
-				.where("userId").is(tokenToBeUpdated.getUserId()));
+				.where("UserId").is(tokenToBeUpdated.getUserId()));
     	
 		Update update = new Update();
 		update.set("TokenString", tokenToBeUpdated.getTokenString());

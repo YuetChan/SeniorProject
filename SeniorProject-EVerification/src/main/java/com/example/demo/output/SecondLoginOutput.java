@@ -2,26 +2,26 @@ package com.example.demo.output;
 
 public class SecondLoginOutput {
 	
-	private boolean success;
+	private String status;
 	
-	public SecondLoginOutput(boolean success) {
+	public SecondLoginOutput(String status) {
 		
 		super();
 		
-		this.success = success;
+		this.status = status;
 		
 	}
 
-	public boolean isSuccess() {
+	public String getStatus() {
 		
-		return success;
+		return status;
 		
 	}
 
-	public void setSuccess(boolean success) {
+	public void setStatus(String status) {
 		
-		this.success = success;
+		this.status = status;
 		
 	}
-	
+
 }

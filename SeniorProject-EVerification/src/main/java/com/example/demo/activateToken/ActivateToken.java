@@ -8,14 +8,15 @@ public class ActivateToken {
 	private String tokenString;
 	private LocalDateTime expirationDate;
 	
-	public ActivateToken(int userId, String tokenString, LocalDateTime expirationDate) {
+	public ActivateToken() {
 		
 		super();
 		
-		this.userId = userId;
+	}
+	
+	public boolean isExpired() {
 		
-		this.tokenString = tokenString;
-		this.expirationDate = expirationDate;
+		return LocalDateTime.now().isAfter(expirationDate);
 		
 	}
 	

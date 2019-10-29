@@ -2,25 +2,23 @@ package com.example.demo.output;
 
 public class RegisterOutput {
 	
-	private boolean success;
+	private String status;
 	
-	public RegisterOutput(boolean success) {
+	public RegisterOutput() {
 		
 		super();
 		
-		this.success = success;
+	}
+
+	public String getStatus() {
+		
+		return status;
 		
 	}
 
-	public boolean isSuccess() {
+	public void setStatus(String status) {
 		
-		return success;
-		
-	}
-
-	public void setSuccess(boolean success) {
-		
-		this.success = success;
+		this.status = status;
 		
 	}
 	

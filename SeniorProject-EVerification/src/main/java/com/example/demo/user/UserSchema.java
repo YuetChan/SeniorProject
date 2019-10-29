@@ -6,53 +6,89 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.demo.counter.Counter;
-import com.example.demo.exceptions.*;
+import com.example.demo.exceptions.DbException;
 
 public class UserSchema implements IUserSchema{
 	
     private MongoOperations mongoOperations;
 	
 	
-	public UserSchema() {
+	public UserSchema(MongoOperations mongoOperations) {
+		
 		super();
 		this.mongoOperations = mongoOperations;
+		
 	}
 	
 	@Override
-	public User save(User user) {
-		User savedPatient = null;
+	public User save(User userToBeSaved) {
+		
+		User savedUser = null;
 		
 		Query query = new Query();
 		Update update = new Update();
 		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
 		
-		user.setUserId(getNextId());
-		
-		query.addCriteria(Criteria.where("PatientID").is(user.getUserId()));
+		query.addCriteria(Criteria.where("UserId").is(userToBeSaved.getUserId()));
 
-		update.setOnInsert("UserID", user.getUserId());
-		update.setOnInsert("FirstName", user.getUseremail());
-		update.setOnInsert("ImageReference", user.getImageReference());
-		update.setOnInsert("Password", user.getPassword());
-		update.setOnInsert("CreatedAt", user.getCreatedAt());
-		update.setOnInsert("UpdatedAt", user.getUpdatedAt());
+		update.setOnInsert("UserId", userToBeSaved.getUserId());
+		update.setOnInsert("Useremail", userToBeSaved.getUseremail());
+		update.setOnInsert("Password", userToBeSaved.getPassword());
+		update.setOnInsert("ImageReference", userToBeSaved.getImageReference());
+		
+		update.setOnInsert("Activated", userToBeSaved.isActivated());
+		update.setOnInsert("CreatedAt", userToBeSaved.getCreatedAt());
+		update.setOnInsert("UpdatedAt", userToBeSaved.getUpdatedAt());
 		
 		findAndModifyOptions.upsert(true);
 		findAndModifyOptions.returnNew(true);
 
-		if(findByUserId(user.getUserId()) == null){
-			savedPatient = mongoOperations.findAndModify(query, update, findAndModifyOptions, User.class, "User");
-		}
+	  	savedUser 
+    	= mongoOperations.findAndModify(
+    			query, update, findAndModifyOptions, User.class, "User");
+	  	
+    	if(savedUser.getUserId() == userToBeSaved.getUserId())
+    		return savedUser;
+    	else 
+    		throw new DbException("Existed User");
+				
+	}
+	
+	@Override
+	public User update(User userToBeUpdated) {
 		
-		return savedPatient;	}
+		User updatedUser = null;
+		
+		Query query = new Query();
+		Update update = new Update();
+		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
+
+		query.addCriteria(Criteria
+				.where("userId").is(userToBeUpdated.getUserId()));
+    	
+		update.set("Useremail", userToBeUpdated.getUseremail());
+		update.set("Password", userToBeUpdated.getPassword());
+		update.set("ImageReference", userToBeUpdated.getImageReference());
+		
+		update.set("Activated", userToBeUpdated.isActivated());
+		update.set("CreatedAt", userToBeUpdated.getCreatedAt());
+		update.set("UpdatedAt", userToBeUpdated.getUpdatedAt());
+		
+		findAndModifyOptions.upsert(true);
+		findAndModifyOptions.returnNew(true);
+		
+		updatedUser 
+    	= mongoOperations.findAndModify(
+    			query, update, findAndModifyOptions, User.class, "User");
+    	
+    	return updatedUser;
+	}
+
 	
 	@Override
 	public User findByUseremail(String useremail) {
+		
 		User foundUser = null;
 		
 		Query query = new Query();
@@ -61,6 +97,7 @@ public class UserSchema implements IUserSchema{
 		foundUser = mongoOperations.findOne(query, User.class, "User");
 		
 		return foundUser;
+		
 	}
 
 	@Override
@@ -69,7 +106,7 @@ public class UserSchema implements IUserSchema{
 		User foundUser = null;
 		
 		Query query = new Query();
-		query.addCriteria(Criteria.where("UserID").is(userId));
+		query.addCriteria(Criteria.where("UserId").is(userId));
 
 		foundUser = mongoOperations.findOne(query, User.class, "User");
 		
@@ -77,21 +114,30 @@ public class UserSchema implements IUserSchema{
 	}
 	
 	@Override
+	public void deleteAll() {
+		
+    	mongoOperations.remove(new Query(), User.class, "User");
+    	mongoOperations.remove(new Query(), "UserCounter");
+    	
+	}
+	
+	@Override
 	public int getNextId() {
 		
-			Query query = new Query();
-	  	  	query.addCriteria(Criteria.where("_id").is("User"));
+		Query query = new Query();
+	  	query.addCriteria(Criteria.where("_id").is("User"));
 			
-	  	  	Update update = new Update();
+	  	Update update = new Update();
 	 
-	  	  	FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
-	  	    findAndModifyOptions.upsert(true);
-	  	    findAndModifyOptions.returnNew(true);
+	  	FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
+	  	findAndModifyOptions.upsert(true);
+	  	findAndModifyOptions.returnNew(true);
 	  	  
-	  	  	Counter counter 
-	  	  	= mongoOperations.findAndModify(
-	  	  			query, update.inc("seq", 1), findAndModifyOptions, Counter.class, "UserCounter");
-	        return counter.getSeq();
+	  	Counter counter 
+	  	= mongoOperations.findAndModify(
+	  			query, update.inc("seq", 1), findAndModifyOptions, Counter.class, "UserCounter");
+	    
+	  	return counter.getSeq();
 	        
 	}
 	
