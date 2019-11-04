@@ -33,7 +33,7 @@ public class EmojiSequenceSchema implements IEmojiSequenceSchema {
     	
 		Update update = new Update();
 		update.setOnInsert("UserId", sequenceToBeSaved.getUserId());
-		update.setOnInsert("EmojiSequence", sequenceToBeSaved.getEmojiSequence());
+		update.setOnInsert("EmojiSequenceKeys", sequenceToBeSaved.getEmojiSequenceKeys());
 		update.setOnInsert("ExpirationDate", sequenceToBeSaved.getExpirationDate());
 		
 		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
@@ -61,7 +61,7 @@ public class EmojiSequenceSchema implements IEmojiSequenceSchema {
 				.where("UserId").is(sequenceToBeUpdated.getUserId()));
     	
 		Update update = new Update();
-		update.set("EmojiSequence", sequenceToBeUpdated.getEmojiSequence());
+		update.set("EmojiSequenceKeys", sequenceToBeUpdated.getEmojiSequenceKeys());
 		update.set("ExpirationDate", sequenceToBeUpdated.getExpirationDate());
 		
 		FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions();
