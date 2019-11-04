@@ -4,10 +4,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SeniorProjectEVerificationApplication {
+public class EmojiVerificationBackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SeniorProjectEVerificationApplication.class, args);
+		
+		SpringApplication.run(EmojiVerificationBackendApplication.class, args);
+		
 	}
 
 }
