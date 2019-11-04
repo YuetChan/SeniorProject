@@ -10,6 +10,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.AmazonRekognitionClientBuilder;
+import com.amazonaws.services.rekognition.model.Attribute;
 import com.amazonaws.services.rekognition.model.DetectFacesRequest;
 import com.amazonaws.services.rekognition.model.DetectFacesResult;
 import com.amazonaws.services.rekognition.model.FaceDetail;
@@ -25,7 +26,7 @@ public class AWSFaceDetector implements IFaceDetector {
 
 	public AWSFaceDetector() {
 		//the key and secret are in facebook message
-		awsCreds = new BasicAWSCredentials("AKIAZ4X75F3577Y4IYEH", "FLa1tQO1nEMI/w63zrXnsVdDQeHOLUJFFbi9xRAY");
+		awsCreds = new BasicAWSCredentials("", "");
 		rekognitionClient = AmazonRekognitionClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
 	
 	}
@@ -62,7 +63,7 @@ public class AWSFaceDetector implements IFaceDetector {
         targetImageBytesBuffer = ByteBuffer.wrap(targetImageBytes);
 		Image target = new Image().withBytes(targetImageBytesBuffer);
 		
-		DetectFacesRequest detectFacesRequest = new DetectFacesRequest().withImage(target);
+		DetectFacesRequest detectFacesRequest = new DetectFacesRequest().withImage(target).withAttributes(Attribute.ALL);
 		
 		DetectFacesResult detectFacesResult = rekognitionClient.detectFaces(detectFacesRequest);
 		List<FaceDetail> faceDetails = detectFacesResult.getFaceDetails();
