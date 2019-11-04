@@ -21,8 +21,21 @@ public class EmojiSequence {
         
     }
     
+    private static final Map<Integer, String> emotionMap;
+    static {
+    	
+        Map<Integer, String> eMap = new HashMap();
+        eMap.put(0, "HAPPY");
+        eMap.put(1, "ANGRY");
+        eMap.put(2, "SURPRISED");
+        eMap.put(3, "CALM");
+        
+        emotionMap = Collections.unmodifiableMap(eMap);
+        
+    }
+    
 	private int userId;
-	private List<String> emojiSequence;
+	private List<Integer> emojiSequenceKeys;
 	private LocalDateTime expirationDate;
 	
 	public EmojiSequence() {
@@ -31,10 +44,15 @@ public class EmojiSequence {
 		
 	}
 	
-
 	public static Map<Integer, String> getEmojiMap() {
 		
 		return emojiMap;
+		
+	}
+	
+	public static Map<Integer, String> getEmotionMap() {
+		
+		return emotionMap;
 		
 	}
 
@@ -50,15 +68,15 @@ public class EmojiSequence {
 		
 	}
 
-	public List<String> getEmojiSequence() {
+	public List<Integer> getEmojiSequenceKeys() {
 		
-		return emojiSequence;
+		return emojiSequenceKeys;
 		
 	}
 
-	public void setEmojiSequence(List<String> emojiSequence) {
+	public void setEmojiSequenceKey(List<Integer> emojiSequenceKeys) {
 		
-		this.emojiSequence = emojiSequence;
+		this.emojiSequenceKeys = emojiSequenceKeys;
 		
 	}
 
