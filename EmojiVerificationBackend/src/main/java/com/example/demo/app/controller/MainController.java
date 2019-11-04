@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.amazonaws.services.rekognition.model.Emotion;
 import com.amazonaws.services.rekognition.model.FaceDetail;
 import com.example.demo.app.output.FirstLoginOutput;
 import com.example.demo.app.output.RegisterOutput;
@@ -120,7 +121,7 @@ public class MainController {
 				
 				EmojiSequence emojiSequence = new EmojiSequence();
 				emojiSequence.setUserId(newUser.getUserId());
-				emojiSequence.setEmojiSequence(new ArrayList());
+				emojiSequence.setEmojiSequenceKey(new ArrayList());
 				emojiSequence.setExpirationDate(LocalDateTime.now());
 				
 				emojiSequenceSchema.save(emojiSequence);
@@ -169,7 +170,7 @@ public class MainController {
 				
 				EmojiSequence emojiSequence = new EmojiSequence();
 				emojiSequence.setUserId(foundUser.getUserId());
-				emojiSequence.setEmojiSequence(EmojiSequenceService.getRandomEmojiSequence(4));
+				emojiSequence.setEmojiSequenceKey(EmojiSequenceService.getRandomEmojiSequenceKeys(4));
 				emojiSequence.setExpirationDate(LocalDateTime.now().plusMinutes(15));
 				
 				emojiSequenceSchema.update(emojiSequence);
@@ -178,7 +179,7 @@ public class MainController {
 				firstLoginOutput.setErrors(errors);
 				firstLoginOutput.setUserId(foundUser.getUserId());
 				firstLoginOutput.setTokenString(loginToken.getTokenString());
-				firstLoginOutput.setEmojiSequence(emojiSequence.getEmojiSequence());
+				firstLoginOutput.setEmojiSequence(EmojiSequenceService.getEmojiSequenceFromKeys(emojiSequence.getEmojiSequenceKeys()));
 				
 			}else {
 				
@@ -206,7 +207,8 @@ public class MainController {
 	
 	@CrossOrigin(origins = "http://localhost:4200")
 	@PostMapping ("/user/secondLogin/")
-	public @ResponseBody SecondLoginOutput secondLogin(@RequestBody SecondLoginRequest request) throws FileNotFoundException, IOException {
+	public @ResponseBody SecondLoginOutput secondLogin(@RequestBody SecondLoginRequest request) 
+			throws FileNotFoundException, IOException {
 		
 		SecondLoginOutput secondLoginOutput = null;
 		List<String> errors = new ArrayList();
@@ -217,18 +219,63 @@ public class MainController {
 			if(loginToken.getExpirationDate().isAfter(LocalDateTime.now())) {
 				
 				IFaceDetector awsFaceDetector = new AWSFaceDetector();
-				//List<List<FaceDetail>> facesDetected = new ArrayList();
-				for(int i = 0; i < 1; i++) {
+				List<List<FaceDetail>> faceDetailInFrames = new ArrayList();
+				for(int i = 0; i < 100; i++) {
 					
 					String imageDataUrl = request.getImageDataUrls().get(i).split(",")[1];
 					byte[] imageByte = javax.xml.bind.DatatypeConverter.parseBase64Binary(imageDataUrl);
-					System.out.print(awsFaceDetector.detect(imageByte).get(0).getEmotions());
+					//String directory = "C:\\Users\\yuet\\Desktop\\AWSFaceDetectTest\\" + request.getUserId() +"Picture.jpg";
+					//new FileOutputStream(directory).write(imageByte);
+					faceDetailInFrames.add(awsFaceDetector.detect(imageByte));
+					//System.out.print("called");
 				
 				}
 				
-				secondLoginOutput = new SecondLoginOutput();
-				secondLoginOutput.setStatus("secondLogined");
-				secondLoginOutput.setErrors(errors);
+				
+				List<String> detectedEmotions = new ArrayList();
+				for(int i = 0; i < 100; i++) {
+					
+					double maxConfi = 0;
+					String detectedEmotion = "";
+					for(int j = 0; j < faceDetailInFrames.get(i).get(0).getEmotions().size(); j++) {
+						
+						Emotion emotion = faceDetailInFrames.get(i).get(0).getEmotions().get(j);
+						if(emotion.getConfidence() > maxConfi) {
+							
+							detectedEmotion = emotion.getType();
+							maxConfi = emotion.getConfidence();
+							
+						}else {
+							
+							;
+						}
+						
+					}
+					
+					detectedEmotions.add(detectedEmotion);
+					//System.out.print("--" + detectedEmotion);
+						
+				}
+				
+				EmojiSequence emojiSequence = emojiSequenceSchema.findByUserId(request.getUserId());
+				//System.out.print(EmojiSequenceService.matchDetectedEmotionsToEmojiSequence(detectedEmotions, emojiSequence.getEmojiSequence()));
+				
+				System.out.print(detectedEmotions);
+				System.out.print("----"+EmojiSequenceService.getEmotionSequenceFromKeys(emojiSequence.getEmojiSequenceKeys()));
+				
+				if(EmojiSequenceService.matchDetectedEmotionsToEmotionSequence(detectedEmotions, EmojiSequenceService.getEmotionSequenceFromKeys(emojiSequence.getEmojiSequenceKeys()))) {
+					
+					secondLoginOutput = new SecondLoginOutput();
+					secondLoginOutput.setStatus("secondLogined");
+					secondLoginOutput.setErrors(errors);
+					
+				}else {
+					
+					secondLoginOutput = new SecondLoginOutput();
+					secondLoginOutput.setStatus("invalid");
+					secondLoginOutput.setErrors(errors);
+					
+				}
 				
 			}else {
 				
