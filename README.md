@@ -1,6 +1,6 @@
 # Emoji Verification
 
-### An Interactive E-Learning Application
+### Web API 
 Emoji Verification is a Two Factor Authentication API for web application
 
 ### Demo : 
