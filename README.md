@@ -1,7 +1,7 @@
 # Emoji Verification
 
 ### Web API 
-Emoji Verification is a Two Factor Authentication API for web application
+Emoji Verification is a Two Factor Authentication API which detects sequence of emotion from user
 
 ### Demo : 
 *Emotion Verification*
