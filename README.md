@@ -25,7 +25,7 @@ There are 3 layers which are application layer, domain layer, and infrastucture 
 
 * **Infrastucture layer** provides access to datastore.
 
-Technology Stack : Spring Security, Java, Maven 
+Technology Stack : Spring Security, Java, Maven, Postman
 
 Note : Since this application is not business oriented, project structure need to be changed to achieve efficent and scalable result.
 
