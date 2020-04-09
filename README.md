@@ -7,7 +7,7 @@ Emoji Verification is a Two Factor Authentication API which detects sequence of 
 * User can be verified by presenting correct sequence of emotions
 
 ## Development Guide
-In order to use this application, you need to follow the steps below
+In order to work this application, you need to follow the steps below
 
 ```
 coming up...
@@ -24,6 +24,8 @@ There are 3 layers which are application layer, domain layer, and infrastucture 
 * **Domain layer** contains contains all application entity which encapsulate application logic.
 
 * **Infrastucture layer** provides access to datastore.
+
+Technology Stack : Spring Security, Java, Maven 
 
 Note: Since this application is not business oriented, project structure need to be changed to achieve efficent and scalable result.
 
